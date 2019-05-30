@@ -295,19 +295,21 @@ class CIFData(Dataset):
     target: torch.Tensor shape (1, )
     cif_id: str or int
     """
-    def __init__(self, root_dir, max_num_nbr=12, radius=8, dmin=0, step=0.2,
+    def __init__(self, csv_dir, cif_dir, init_dir, prop, max_num_nbr=12, radius=8, dmin=0, step=0.2,
                  random_seed=123):
-        self.root_dir = root_dir
+        self.csv_dir = csv_dir
+        self.cif_dir = cif_dir
+        self.init_dir = init_dir
         self.max_num_nbr, self.radius = max_num_nbr, radius
-        assert os.path.exists(root_dir), 'root_dir does not exist!'
-        id_prop_file = os.path.join(self.root_dir, 'id_prop.csv')
-        assert os.path.exists(id_prop_file), 'id_prop.csv does not exist!'
+        assert os.path.exists(csv_dir), 'csv_dir does not exist!'
+        id_prop_file = os.path.join(self.csv_dir, prop+'.csv')
+        assert os.path.exists(id_prop_file), prop + '.csv does not exist!'
         with open(id_prop_file) as f:
             reader = csv.reader(f)
             self.id_prop_data = [row for row in reader]
         random.seed(random_seed)
         random.shuffle(self.id_prop_data)
-        atom_init_file = os.path.join(self.root_dir, 'atom_init.json')
+        atom_init_file = os.path.join(self.init_dir, 'atom_init.json')
         assert os.path.exists(atom_init_file), 'atom_init.json does not exist!'
         self.ari = AtomCustomJSONInitializer(atom_init_file)
         self.gdf = GaussianDistance(dmin=dmin, dmax=self.radius, step=step)
@@ -318,7 +320,7 @@ class CIFData(Dataset):
     @functools.lru_cache(maxsize=None)  # Cache loaded structures
     def __getitem__(self, idx):
         cif_id, target = self.id_prop_data[idx]
-        crystal = Structure.from_file(os.path.join(self.root_dir,
+        crystal = Structure.from_file(os.path.join(self.cif_dir,
                                                    cif_id+'.cif'))
         atom_fea = np.vstack([self.ari.get_atom_fea(crystal[i].specie.number)
                               for i in range(len(crystal))])

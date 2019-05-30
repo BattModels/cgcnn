@@ -1,0 +1,30 @@
+data_image0
+_cell_length_a       5.97693
+_cell_length_b       5.75722
+_cell_length_c       16.3857
+_cell_angle_alpha    90
+_cell_angle_beta     90
+_cell_angle_gamma    90
+
+_symmetry_space_group_name_H-M    "P 1"
+_symmetry_int_tables_number       1
+
+loop_
+  _symmetry_equiv_pos_as_xyz
+  'x, y, z'
+
+loop_
+  _atom_site_label
+  _atom_site_occupancy
+  _atom_site_fract_x
+  _atom_site_fract_y
+  _atom_site_fract_z
+  _atom_site_thermal_displace_type
+  _atom_site_B_iso_or_equiv
+  _atom_site_type_symbol
+  Zn1      1.0000 0.50000  0.00000  0.50000  Biso   1.000  Zn
+  Zn2      1.0000 0.00000  0.50000  0.50000  Biso   1.000  Zn
+  Se1      1.0000 0.07969  0.11516  0.44599  Biso   1.000  Se
+  Se2      1.0000 0.57969  0.38484  0.55401  Biso   1.000  Se
+  Se3      1.0000 0.92031  0.88484  0.55401  Biso   1.000  Se
+  Se4      1.0000 0.42031  0.61516  0.44599  Biso   1.000  Se

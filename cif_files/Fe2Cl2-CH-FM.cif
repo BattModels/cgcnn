@@ -1,0 +1,28 @@
+data_image0
+_cell_length_a       3.21556
+_cell_length_b       3.21536
+_cell_length_c       18.8558
+_cell_angle_alpha    90
+_cell_angle_beta     90
+_cell_angle_gamma    120.002
+
+_symmetry_space_group_name_H-M    "P 1"
+_symmetry_int_tables_number       1
+
+loop_
+  _symmetry_equiv_pos_as_xyz
+  'x, y, z'
+
+loop_
+  _atom_site_label
+  _atom_site_occupancy
+  _atom_site_fract_x
+  _atom_site_fract_y
+  _atom_site_fract_z
+  _atom_site_thermal_displace_type
+  _atom_site_B_iso_or_equiv
+  _atom_site_type_symbol
+  Cl1      1.0000 0.99989  0.00003  0.37103  Biso   1.000  Cl
+  Cl2      1.0000 0.33345  0.66663  0.62904  Biso   1.000  Cl
+  Fe1      1.0000 0.99985  0.99987  0.54731  Biso   1.000  Fe
+  Fe2      1.0000 0.33349  0.66680  0.45275  Biso   1.000  Fe

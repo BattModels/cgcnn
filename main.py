@@ -19,9 +19,22 @@ from cgcnn.data import collate_pool, get_train_val_test_loader
 from cgcnn.model import CrystalGraphConvNet
 
 parser = argparse.ArgumentParser(description='Crystal Graph Convolutional Neural Networks')
-parser.add_argument('data_options', metavar='OPTIONS', nargs='+',
-                    help='dataset options, started with the path to root dir, '
-                         'then other options')
+
+parser.add_argument('--csv_dir', metavar='CSV', nargs='+', required=True,
+		    help = 'Directory containing .csv file with id_prop list')
+
+parser.add_argument('--cif_dir', nargs='+', required=True,
+		    help='Directory with .cif structure files specified in csv file')
+
+parser.add_argument('--init_dir', nargs='+', required=True,
+		    help = 'Directory containing atom_init.json featurization initialization file')
+
+parser.add_argument('--prop', type=str, required=True,
+		    help = 'Name of property to be predicted')
+
+parser.add_argument('--data_options', metavar='OPTIONS', nargs='+', default=[],
+                    help='dataset options: max_num_nbr, radius, dmin, step, random_seed')
+
 parser.add_argument('--task', choices=['regression', 'classification'],
                     default='regression', help='complete a regression or '
                                                    'classification task (default: regression)')
@@ -78,6 +91,7 @@ parser.add_argument('--n-conv', default=3, type=int, metavar='N',
 parser.add_argument('--n-h', default=1, type=int, metavar='N',
                     help='number of hidden layers after pooling')
 
+global args
 args = parser.parse_args(sys.argv[1:])
 
 args.cuda = not args.disable_cuda and torch.cuda.is_available()
@@ -92,7 +106,7 @@ def main():
     global args, best_mae_error
 
     # load data
-    dataset = CIFData(*args.data_options)
+    dataset = CIFData(*args.csv_dir, *args.cif_dir, *args.init_dir, args.prop, *args.data_options)
     collate_fn = collate_pool
     train_loader, val_loader, test_loader = get_train_val_test_loader(
         dataset=dataset,
@@ -201,7 +215,7 @@ def main():
 
     # test best model
     print('---------Evaluate Model on Test Set---------------')
-    best_checkpoint = torch.load('model_best.pth.tar')
+    best_checkpoint = torch.load('Models/'+args.prop+'_model_best.pth.tar')
     model.load_state_dict(best_checkpoint['state_dict'])
     validate(test_loader, model, criterion, normalizer, test=True)
 
@@ -406,7 +420,7 @@ def validate(val_loader, model, criterion, normalizer, test=False):
     if test:
         star_label = '**'
         import csv
-        with open('test_results.csv', 'w') as f:
+        with open('Test_results/'+args.prop+'_test_results.csv', 'w') as f:
             writer = csv.writer(f)
             for cif_id, target, pred in zip(test_cif_ids, test_targets,
                                             test_preds):
@@ -495,10 +509,10 @@ class AverageMeter(object):
         self.avg = self.sum / self.count
 
 
-def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
+def save_checkpoint(state, is_best, filename='Checkpoints/'+args.prop+'.checkpoint.pth.tar'):
     torch.save(state, filename)
     if is_best:
-        shutil.copyfile(filename, 'model_best.pth.tar')
+        shutil.copyfile(filename, 'Models/'+args.prop+'_model_best.pth.tar')
 
 
 def adjust_learning_rate(optimizer, epoch, k):
