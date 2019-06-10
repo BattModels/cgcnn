@@ -4,6 +4,7 @@ import shutil
 import sys
 import time
 import warnings
+import csv
 from random import sample
 
 import numpy as np
@@ -189,7 +190,7 @@ def main():
         train(train_loader, model, criterion, optimizer, epoch, normalizer)
 
         # evaluate on validation set
-        mae_error = validate(val_loader, model, criterion, normalizer)
+        mae_error = validate(val_loader, model, criterion, normalizer, epoch=epoch)
 
         if mae_error != mae_error:
             print('Exit due to NaN')
@@ -289,34 +290,48 @@ def train(train_loader, model, criterion, optimizer, epoch, normalizer):
         batch_time.update(time.time() - end)
         end = time.time()
 
-        if i % args.print_freq == 0:
-            if args.task == 'regression':
-                print('Epoch: [{0}][{1}/{2}]\t'
-                      'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-                      'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
-                      'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
-                      'MAE {mae_errors.val:.3f} ({mae_errors.avg:.3f})'.format(
-                    epoch, i, len(train_loader), batch_time=batch_time,
-                    data_time=data_time, loss=losses, mae_errors=mae_errors)
-                )
-            else:
-                print('Epoch: [{0}][{1}/{2}]\t'
-                      'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-                      'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
-                      'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
-                      'Accu {accu.val:.3f} ({accu.avg:.3f})\t'
-                      'Precision {prec.val:.3f} ({prec.avg:.3f})\t'
-                      'Recall {recall.val:.3f} ({recall.avg:.3f})\t'
-                      'F1 {f1.val:.3f} ({f1.avg:.3f})\t'
-                      'AUC {auc.val:.3f} ({auc.avg:.3f})'.format(
-                    epoch, i, len(train_loader), batch_time=batch_time,
-                    data_time=data_time, loss=losses, accu=accuracies,
-                    prec=precisions, recall=recalls, f1=fscores,
-                    auc=auc_scores)
-                )
+        loss_per_epoch_filename = 'Loss_per_Epoch/' + args.prop + '_train_LvE_' + str(args.n_conv) + '_' + str(args.epochs) + '.csv'
+
+        with open(loss_per_epoch_filename, 'a') as loss_epoch_file:
+            
+            writer = csv.writer(loss_epoch_file)
+            if epoch == 0:
+                writer.writerow(['Epoch, MSE (loss), MAE; filename format = prop + train/val/test + n_conv + epochs'])
+
+            if i % args.print_freq == 0:
+                if args.task == 'regression':
+                    print('Epoch: [{0}][{1}/{2}]\t'
+                          'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+                          'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
+                          'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
+                          'MAE {mae_errors.val:.3f} ({mae_errors.avg:.3f})'.format(
+                        epoch, i, len(train_loader), batch_time=batch_time,
+                        data_time=data_time, loss=losses, mae_errors=mae_errors)
+                    )
+                   
+                else:
+                    print('Epoch: [{0}][{1}/{2}]\t'
+                          'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+                          'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
+                          'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
+                          'Accu {accu.val:.3f} ({accu.avg:.3f})\t'
+                          'Precision {prec.val:.3f} ({prec.avg:.3f})\t'
+                          'Recall {recall.val:.3f} ({recall.avg:.3f})\t'
+                          'F1 {f1.val:.3f} ({f1.avg:.3f})\t'
+                          'AUC {auc.val:.3f} ({auc.avg:.3f})'.format(
+                        epoch, i, len(train_loader), batch_time=batch_time,
+                        data_time=data_time, loss=losses, accu=accuracies,
+                        prec=precisions, recall=recalls, f1=fscores,
+                        auc=auc_scores)
+                    )
+                row = [epoch, losses.avg.item(), mae_errors.avg.item()]
+                writer.writerow(row)
+
+        loss_epoch_file.close()
 
 
-def validate(val_loader, model, criterion, normalizer, test=False):
+
+def validate(val_loader, model, criterion, normalizer, test=False, epoch=-1):
     batch_time = AverageMeter()
     losses = AverageMeter()
     if args.task == 'regression':
@@ -396,30 +411,44 @@ def validate(val_loader, model, criterion, normalizer, test=False):
         batch_time.update(time.time() - end)
         end = time.time()
 
-        if i % args.print_freq == 0:
-            if args.task == 'regression':
-                print('Test: [{0}/{1}]\t'
-                      'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-                      'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
-                      'MAE {mae_errors.val:.3f} ({mae_errors.avg:.3f})'.format(
-                    i, len(val_loader), batch_time=batch_time, loss=losses,
-                    mae_errors=mae_errors))
-            else:
-                print('Test: [{0}/{1}]\t'
-                      'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-                      'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
-                      'Accu {accu.val:.3f} ({accu.avg:.3f})\t'
-                      'Precision {prec.val:.3f} ({prec.avg:.3f})\t'
-                      'Recall {recall.val:.3f} ({recall.avg:.3f})\t'
-                      'F1 {f1.val:.3f} ({f1.avg:.3f})\t'
-                      'AUC {auc.val:.3f} ({auc.avg:.3f})'.format(
-                    i, len(val_loader), batch_time=batch_time, loss=losses,
-                    accu=accuracies, prec=precisions, recall=recalls,
-                    f1=fscores, auc=auc_scores))
+        loss_per_epoch_val_filename = 'Loss_per_Epoch/' + args.prop + '_val_LvE_' + str(args.n_conv) + '_' + str(args.epochs) + '.csv'
+
+        with open(loss_per_epoch_val_filename, 'a') as loss_epoch_val_file:
+            
+            writer = csv.writer(loss_epoch_val_file)
+            if epoch == 0:
+                writer.writerow(['Epoch, MSE (loss), MAE; filename format = prop + train/val_LvE + n_conv + epochs'])
+
+            if i % args.print_freq == 0:
+                if args.task == 'regression':
+                    print('Test: [{0}/{1}]\t'
+                          'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+                          'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
+                          'MAE {mae_errors.val:.3f} ({mae_errors.avg:.3f})'.format(
+                        i, len(val_loader), batch_time=batch_time, loss=losses,
+                        mae_errors=mae_errors))
+                else:
+                    print('Test: [{0}/{1}]\t'
+                          'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+                          'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
+                          'Accu {accu.val:.3f} ({accu.avg:.3f})\t'
+                          'Precision {prec.val:.3f} ({prec.avg:.3f})\t'
+                          'Recall {recall.val:.3f} ({recall.avg:.3f})\t'
+                          'F1 {f1.val:.3f} ({f1.avg:.3f})\t'
+                          'AUC {auc.val:.3f} ({auc.avg:.3f})'.format(
+                        i, len(val_loader), batch_time=batch_time, loss=losses,
+                        accu=accuracies, prec=precisions, recall=recalls,
+                        f1=fscores, auc=auc_scores))
+                if epoch >= 0:
+                    row = [epoch, losses.avg, mae_errors.avg.item()]
+                    writer.writerow(row)
+
+        loss_epoch_val_file.close()
+
 
     if test:
         star_label = '**'
-        import csv
+        # import csv
         with open('Test_results/'+args.prop+'_test_results.csv', 'w') as f:
             writer = csv.writer(f)
             for cif_id, target, pred in zip(test_cif_ids, test_targets,
