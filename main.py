@@ -216,7 +216,8 @@ def main():
 
     # test best model
     print('---------Evaluate Model on Test Set---------------')
-    best_checkpoint = torch.load('Models/'+args.prop+'_model_best.pth.tar')
+    best_checkpoint = torch.load('Models/' + args.prop + '_' + str(args.n_conv) + '_' + 
+                                str(args.epochs) + '_' + str(args.n_h) + '_model_best.pth.tar')
     model.load_state_dict(best_checkpoint['state_dict'])
     validate(test_loader, model, criterion, normalizer, test=True)
 
@@ -290,7 +291,7 @@ def train(train_loader, model, criterion, optimizer, epoch, normalizer):
         batch_time.update(time.time() - end)
         end = time.time()
 
-        loss_per_epoch_filename = 'Loss_per_Epoch/' + args.prop + '_train_LvE_' + str(args.n_conv) + '_' + str(args.epochs) + '.csv'
+        loss_per_epoch_filename = 'Loss_per_Epoch/' + args.prop + '_' + str(args.n_conv) + '_' + str(args.epochs) + '_' + str(args.n_h) + '_train_LvE.csv'
 
         with open(loss_per_epoch_filename, 'a') as loss_epoch_file:
             
@@ -411,7 +412,7 @@ def validate(val_loader, model, criterion, normalizer, test=False, epoch=-1):
         batch_time.update(time.time() - end)
         end = time.time()
 
-        loss_per_epoch_val_filename = 'Loss_per_Epoch/' + args.prop + '_val_LvE_' + str(args.n_conv) + '_' + str(args.epochs) + '.csv'
+        loss_per_epoch_val_filename =  'Loss_per_Epoch/' + args.prop + '_' + str(args.n_conv) + '_' + str(args.epochs) + '_' + str(args.n_h) + '_val_LvE.csv'
 
         with open(loss_per_epoch_val_filename, 'a') as loss_epoch_val_file:
             
@@ -449,7 +450,8 @@ def validate(val_loader, model, criterion, normalizer, test=False, epoch=-1):
     if test:
         star_label = '**'
         # import csv
-        with open('Test_results/'+args.prop+'_test_results.csv', 'w') as f:
+        with open('Test_results/' + args.prop + '_' + str(args.n_conv) + '_' + str(args.epochs) + 
+                    '_' + str(args.n_h) + '_test_results.csv', 'w') as f:
             writer = csv.writer(f)
             for cif_id, target, pred in zip(test_cif_ids, test_targets,
                                             test_preds):
@@ -538,10 +540,12 @@ class AverageMeter(object):
         self.avg = self.sum / self.count
 
 
-def save_checkpoint(state, is_best, filename='Checkpoints/'+args.prop+'.checkpoint.pth.tar'):
+def save_checkpoint(state, is_best, filename='Checkpoints/' + args.prop + '_' + str(args.n_conv) + '_' + 
+                    str(args.epochs) + '_' + str(args.n_h) + '.checkpoint.pth.tar'):
     torch.save(state, filename)
     if is_best:
-        shutil.copyfile(filename, 'Models/'+args.prop+'_model_best.pth.tar')
+        shutil.copyfile(filename, 'Models/' + args.prop + '_' + str(args.n_conv) + '_' + 
+                        str(args.epochs) + '_' + str(args.n_h) + '_model_best.pth.tar')
 
 
 def adjust_learning_rate(optimizer, epoch, k):
