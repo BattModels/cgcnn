@@ -59,7 +59,7 @@ parser.add_argument('--momentum', default=0.9, type=float, metavar='M',
                     help='momentum')
 parser.add_argument('--weight-decay', '--wd', default=0, type=float,
                     metavar='W', help='weight decay (default: 0)')
-parser.add_argument('--print-freq', '-p', default=10, type=int,
+parser.add_argument('--print-freq', '-p', default=1, type=int,
                     metavar='N', help='print frequency (default: 10)')
 parser.add_argument('--resume', default='', type=str, metavar='PATH',
                     help='path to latest checkpoint (default: none)')
@@ -296,7 +296,7 @@ def train(train_loader, model, criterion, optimizer, epoch, normalizer):
         with open(loss_per_epoch_filename, 'a') as loss_epoch_file:
             
             writer = csv.writer(loss_epoch_file)
-            if epoch == 0:
+            if epoch == 0 and i ==0:
                 writer.writerow(['Epoch, MSE (loss), MAE; filename format = prop + train/val/test + n_conv + epochs'])
 
             if i % args.print_freq == 0:
@@ -417,7 +417,7 @@ def validate(val_loader, model, criterion, normalizer, test=False, epoch=-1):
         with open(loss_per_epoch_val_filename, 'a') as loss_epoch_val_file:
             
             writer = csv.writer(loss_epoch_val_file)
-            if epoch == 0:
+            if epoch == 0 and i == 0:
                 writer.writerow(['Epoch, MSE (loss), MAE; filename format = prop + train/val_LvE + n_conv + epochs'])
 
             if i % args.print_freq == 0:
