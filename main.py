@@ -424,7 +424,11 @@ def validate(val_loader, model, criterion, normalizer, test=False, epoch=-1):
             
             writer = csv.writer(loss_epoch_val_file)
             if epoch == 0 and i == 0:
-                writer.writerow(['Epoch, MSE (loss), MAE; filename format = prop + train/val_LvE + n_conv + epochs'])
+                if args.task == 'regression':
+                    writer.writerow(['Epoch, MSE (loss), MAE; filename format = prop + train/val/test + n_conv + epochs'])
+                else:
+                    writer.writerow(['Epoch, Loss, Accuracies, Precisions, Recalls, Fscores, Auc_scores; filename format = prop + train/val/test + n_conv + epochs'])
+
 
             if i % args.print_freq == 0:
                 if args.task == 'regression':
@@ -447,7 +451,10 @@ def validate(val_loader, model, criterion, normalizer, test=False, epoch=-1):
                         accu=accuracies, prec=precisions, recall=recalls,
                         f1=fscores, auc=auc_scores))
                 if epoch >= 0:
-                    row = [epoch, losses.avg, mae_errors.avg.item()]
+                    if args.task == 'regression':
+                        row = [epoch, losses.avg.item(), mae_errors.avg.item()]
+                    else:
+                        row = [epoch, losses.avg, accuracies.avg, precisions.avg, fscores.avg, auc_scores.avg]
                     writer.writerow(row)
 
         loss_epoch_val_file.close()
