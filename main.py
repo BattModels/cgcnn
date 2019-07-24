@@ -454,7 +454,7 @@ def validate(val_loader, model, criterion, normalizer, test=False, epoch=-1):
                     if args.task == 'regression':
                         row = [epoch, losses.avg.item(), mae_errors.avg.item()]
                     else:
-                        row = [epoch, losses.avg, accuracies.avg, precisions.avg, fscores.avg, auc_scores.avg]
+                        row = [epoch, losses.avg, accuracies.avg, precisions.avg, recalls.avg, fscores.avg, auc_scores.avg]
                     writer.writerow(row)
 
         loss_epoch_val_file.close()
