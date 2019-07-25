@@ -331,7 +331,7 @@ def train(train_loader, model, criterion, optimizer, epoch, normalizer):
                 if args.task == 'regression':
                     row = [epoch, losses.avg.item(), mae_errors.avg.item()]
                 else:
-                    row = [epoch, losses.avg, accuracies.avg, precisions.avg, fscores.avg, auc_scores.avg]
+                    row = [epoch, losses.avg, accuracies.avg, precisions.avg, recalls.avg, fscores.avg, auc_scores.avg]
                 writer.writerow(row)
 
         loss_epoch_file.close()
