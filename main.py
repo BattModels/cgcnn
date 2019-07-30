@@ -452,7 +452,9 @@ def validate(val_loader, model, criterion, normalizer, test=False, epoch=-1):
                         f1=fscores, auc=auc_scores))
                 if epoch >= 0:
                     if args.task == 'regression':
-                        row = [epoch, losses.avg.item(), mae_errors.avg.item()]
+                        #row = [epoch, losses.avg.item(), mae_errors.avg.item()]
+                        row = [epoch, losses.avg, mae_errors.avg]
+
                     else:
                         row = [epoch, losses.avg, accuracies.avg, precisions.avg, recalls.avg, fscores.avg, auc_scores.avg]
                     writer.writerow(row)
