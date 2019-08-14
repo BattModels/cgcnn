@@ -291,7 +291,8 @@ def train(train_loader, model, criterion, optimizer, epoch, normalizer):
         batch_time.update(time.time() - end)
         end = time.time()
 
-        loss_per_epoch_filename = 'Loss_per_Epoch/' + args.prop + '_' + str(args.n_conv) + '_' + str(args.epochs) + '_' + str(args.n_h) + '_train_LvE.csv'
+        loss_per_epoch_filename = 'Loss_per_Epoch/' + args.prop + '_' + str(args.n_conv) + '_' + str(args.epochs) + '_' + str(args.n_h) + \
+                                   '_LR' + str('%.0E' % args.lr) + '_train_LvE.csv'
 
         with open(loss_per_epoch_filename, 'a') as loss_epoch_file:
             
@@ -418,7 +419,8 @@ def validate(val_loader, model, criterion, normalizer, test=False, epoch=-1):
         batch_time.update(time.time() - end)
         end = time.time()
 
-        loss_per_epoch_val_filename =  'Loss_per_Epoch/' + args.prop + '_' + str(args.n_conv) + '_' + str(args.epochs) + '_' + str(args.n_h) + '_val_LvE.csv'
+        loss_per_epoch_val_filename =  'Loss_per_Epoch/' + args.prop + '_' + str(args.n_conv) + '_' + str(args.epochs) + '_' + str(args.n_h) + \
+                                        '_LR' + str('%.0E' % args.lr) + '_val_LvE.csv'
 
         with open(loss_per_epoch_val_filename, 'a') as loss_epoch_val_file:
             
@@ -453,7 +455,7 @@ def validate(val_loader, model, criterion, normalizer, test=False, epoch=-1):
                 if epoch >= 0:
                     if args.task == 'regression':
                         #row = [epoch, losses.avg.item(), mae_errors.avg.item()]
-                        row = [epoch, losses.avg, mae_errors.avg]
+                        row = [epoch, losses.avg, mae_errors.avg.item()]
 
                     else:
                         row = [epoch, losses.avg, accuracies.avg, precisions.avg, recalls.avg, fscores.avg, auc_scores.avg]
@@ -466,7 +468,7 @@ def validate(val_loader, model, criterion, normalizer, test=False, epoch=-1):
         star_label = '**'
         # import csv
         with open('Test_results/' + args.prop + '_' + str(args.n_conv) + '_' + str(args.epochs) + 
-                    '_' + str(args.n_h) + '_test_results.csv', 'w') as f:
+                    '_' + str(args.n_h) + '_LR' + str('%.0E' % args.lr) + '_test_results.csv', 'w') as f:
             writer = csv.writer(f)
             for cif_id, target, pred in zip(test_cif_ids, test_targets,
                                             test_preds):
