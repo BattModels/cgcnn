@@ -304,7 +304,7 @@ def train(train_loader, model, criterion, optimizer, epoch, normalizer):
 
         loss_per_epoch_filename = 'Loss_per_Epoch/' + args.prop + '_' + str(args.n_conv) + '_' + str(args.epochs) + '_' + str(args.n_h) + \
                                    '_LR' + str('%.0E' % args.lr) + '_MaxNbr' + str(args.data_options[0]) + '_Radius' + \
-                                   str(args.data_options[1]) + '_Dmin' + str(args.data_options[2]) + '_Step' + str(args.data_options[3] + \
+                                   str(args.data_options[1]) + '_Dmin' + str(args.data_options[2]) + '_Step' + str(args.data_options[3]) + \
                                    '_RandSeed' + str(args.data_options[4]) +'_train_LvE.csv'
 
         with open(loss_per_epoch_filename, 'a') as loss_epoch_file:
@@ -434,7 +434,7 @@ def validate(val_loader, model, criterion, normalizer, test=False, epoch=-1):
 
         loss_per_epoch_val_filename =  'Loss_per_Epoch/' + args.prop + '_' + str(args.n_conv) + '_' + str(args.epochs) + '_' + str(args.n_h) + \
                                         '_LR' + str('%.0E' % args.lr) + '_MaxNbr' + str(args.data_options[0]) + '_Radius' + \
-                                        str(args.data_options[1]) + '_Dmin' + str(args.data_options[2]) + '_Step' + str(args.data_options[3] + \
+                                        str(args.data_options[1]) + '_Dmin' + str(args.data_options[2]) + '_Step' + str(args.data_options[3]) + \
                                         '_RandSeed' + str(args.data_options[4]) +'_val_LvE.csv'
 
         with open(loss_per_epoch_val_filename, 'a') as loss_epoch_val_file:
@@ -485,7 +485,7 @@ def validate(val_loader, model, criterion, normalizer, test=False, epoch=-1):
         with open('Test_results/' + args.prop + '_' + str(args.n_conv) + '_' + str(args.epochs) + 
                     '_' + str(args.n_h) + '_LR' + str('%.0E' % args.lr) + '_MaxNbr' + str(args.data_options[0]) + 
                     '_Radius' + str(args.data_options[1]) + '_Dmin' + str(args.data_options[2]) + '_Step' + 
-                                str(args.data_options[3] + '_RandSeed' + str(args.data_options[4]) +'_test_results.csv', 'w') as f:
+                                str(args.data_options[3]) + '_RandSeed' + str(args.data_options[4]) +'_test_results.csv', 'w') as f:
             writer = csv.writer(f)
             for cif_id, target, pred in zip(test_cif_ids, test_targets,
                                             test_preds):
