@@ -300,7 +300,7 @@ class CIFData(Dataset):
         self.csv_dir = csv_dir
         self.cif_dir = cif_dir
         self.init_dir = init_dir
-        self.max_num_nbr, self.radius = max_num_nbr, radius
+        self.max_num_nbr, self.radius = int(max_num_nbr), radius
         assert os.path.exists(csv_dir), 'csv_dir does not exist!'
         id_prop_file = os.path.join(self.csv_dir, prop+'.csv')
         assert os.path.exists(id_prop_file), prop + '.csv does not exist!'
