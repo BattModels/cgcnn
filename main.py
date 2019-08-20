@@ -224,7 +224,11 @@ def main():
     # test best model
     print('---------Evaluate Model on Test Set---------------')
     best_checkpoint = torch.load('Models/' + args.prop + '_' + str(args.n_conv) + '_' + 
-                                str(args.epochs) + '_' + str(args.n_h) + '_model_best.pth.tar')
+                                str(args.epochs) + '_' + str(args.n_h) + '_LR' + str('%.0E' % args.lr) +
+                                '_MaxNbr' + str(args.data_options[0]) + '_Radius' + str(args.data_options[1]) + 
+                                '_Dmin' + str(args.data_options[2]) + '_Step' + 
+                                str(args.data_options[3] + '_RandSeed' + 
+                                str(args.data_options[4]) + '_model_best.pth.tar')
     model.load_state_dict(best_checkpoint['state_dict'])
     validate(test_loader, model, criterion, normalizer, test=True)
 
@@ -299,7 +303,9 @@ def train(train_loader, model, criterion, optimizer, epoch, normalizer):
         end = time.time()
 
         loss_per_epoch_filename = 'Loss_per_Epoch/' + args.prop + '_' + str(args.n_conv) + '_' + str(args.epochs) + '_' + str(args.n_h) + \
-                                   '_LR' + str('%.0E' % args.lr) + '_train_LvE.csv'
+                                   '_LR' + str('%.0E' % args.lr) + '_MaxNbr' + str(args.data_options[0]) + '_Radius' + \
+                                   str(args.data_options[1]) + '_Dmin' + str(args.data_options[2]) + '_Step' + str(args.data_options[3] + \
+                                   '_RandSeed' + str(args.data_options[4]) +'_train_LvE.csv'
 
         with open(loss_per_epoch_filename, 'a') as loss_epoch_file:
             
@@ -427,7 +433,9 @@ def validate(val_loader, model, criterion, normalizer, test=False, epoch=-1):
         end = time.time()
 
         loss_per_epoch_val_filename =  'Loss_per_Epoch/' + args.prop + '_' + str(args.n_conv) + '_' + str(args.epochs) + '_' + str(args.n_h) + \
-                                        '_LR' + str('%.0E' % args.lr) + '_val_LvE.csv'
+                                        '_LR' + str('%.0E' % args.lr) + '_MaxNbr' + str(args.data_options[0]) + '_Radius' + \
+                                        str(args.data_options[1]) + '_Dmin' + str(args.data_options[2]) + '_Step' + str(args.data_options[3] + \
+                                        '_RandSeed' + str(args.data_options[4]) +'_val_LvE.csv'
 
         with open(loss_per_epoch_val_filename, 'a') as loss_epoch_val_file:
             
@@ -475,7 +483,9 @@ def validate(val_loader, model, criterion, normalizer, test=False, epoch=-1):
         star_label = '**'
         # import csv
         with open('Test_results/' + args.prop + '_' + str(args.n_conv) + '_' + str(args.epochs) + 
-                    '_' + str(args.n_h) + '_LR' + str('%.0E' % args.lr) + '_test_results.csv', 'w') as f:
+                    '_' + str(args.n_h) + '_LR' + str('%.0E' % args.lr) + '_MaxNbr' + str(args.data_options[0]) + 
+                    '_Radius' + str(args.data_options[1]) + '_Dmin' + str(args.data_options[2]) + '_Step' + 
+                                str(args.data_options[3] + '_RandSeed' + str(args.data_options[4]) +'_test_results.csv', 'w') as f:
             writer = csv.writer(f)
             for cif_id, target, pred in zip(test_cif_ids, test_targets,
                                             test_preds):
