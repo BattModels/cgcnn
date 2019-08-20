@@ -33,7 +33,7 @@ parser.add_argument('--init_dir', nargs='+', required=True,
 parser.add_argument('--prop', type=str, required=True,
 		    help = 'Name of property to be predicted')
 
-parser.add_argument('--data_options', metavar='OPTIONS', nargs='+', default=[],
+parser.add_argument('--data_options', metavar='OPTIONS', nargs='+', default=[12, 8, 0, 0.2, 123],
                     help='dataset options: max_num_nbr, radius, dmin, step, random_seed')
 
 parser.add_argument('--task', choices=['regression', 'classification'],
@@ -91,6 +91,12 @@ parser.add_argument('--n-conv', default=3, type=int, metavar='N',
                     help='number of conv layers')
 parser.add_argument('--n-h', default=1, type=int, metavar='N',
                     help='number of hidden layers after pooling')
+parser.add_argument('--n-nbr', default=12, type=int, 
+                    help='maximum number of neighbors per atom')
+parser.add_argument('--max-rad', default=8, type=float, 
+                    help='maximum neighbor distance in Angstrom')
+parser.add_argument('--rand-seed', default=123, type=int, 
+                    help='random seed for training, validation, and test sets')
 
 global args
 args = parser.parse_args(sys.argv[1:])
