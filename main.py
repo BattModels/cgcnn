@@ -33,7 +33,8 @@ parser.add_argument('--init_dir', nargs='+', required=True,
 parser.add_argument('--prop', type=str, required=True,
 		    help = 'Name of property to be predicted')
 
-parser.add_argument('--data_options', metavar='OPTIONS', nargs='+', default=[12, 8, 0, 0.2, 123],
+parser.add_argument('--data_options', metavar='OPTIONS', nargs='+', type=float, 
+                    default=[12, 8, 0, 0.2, 123],
                     help='dataset options: max_num_nbr, radius, dmin, step, random_seed')
 
 parser.add_argument('--task', choices=['regression', 'classification'],
