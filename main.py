@@ -227,7 +227,7 @@ def main():
                                 str(args.epochs) + '_' + str(args.n_h) + '_LR' + str('%.0E' % args.lr) +
                                 '_MaxNbr' + str(args.data_options[0]) + '_Radius' + str(args.data_options[1]) + 
                                 '_Dmin' + str(args.data_options[2]) + '_Step' + 
-                                str(args.data_options[3] + '_RandSeed' + 
+                                str(args.data_options[3]) + '_RandSeed' + 
                                 str(args.data_options[4]) + '_model_best.pth.tar')
     model.load_state_dict(best_checkpoint['state_dict'])
     validate(test_loader, model, criterion, normalizer, test=True)
