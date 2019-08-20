@@ -579,7 +579,11 @@ def save_checkpoint(state, is_best, filename='Checkpoints/' + args.prop + '_' + 
     torch.save(state, filename)
     if is_best:
         shutil.copyfile(filename, 'Models/' + args.prop + '_' + str(args.n_conv) + '_' + 
-                        str(args.epochs) + '_' + str(args.n_h) + '_model_best.pth.tar')
+                        str(args.epochs) + '_' + str(args.n_h) + '_LR' + str('%.0E' % args.lr) +
+                                '_MaxNbr' + str(args.data_options[0]) + '_Radius' + 
+                                str(args.data_options[1]) + '_Dmin' + str(args.data_options[2]) + 
+                                '_Step' + str(args.data_options[3]) + '_RandSeed' + 
+                                str(args.data_options[4]) + '_model_best.pth.tar')
 
 
 def adjust_learning_rate(optimizer, epoch, k):
