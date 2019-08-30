@@ -313,7 +313,7 @@ def train(train_loader, model, criterion, optimizer, epoch, normalizer):
             writer = csv.writer(loss_epoch_file)
             if epoch == 0 and i ==0:
                 if args.task == 'regression':
-                    writer.writerow(['Epoch, Normed MSE (loss), MAE, RMSE; filename format = prop + train/val/test + n_conv + epochs'])
+                    writer.writerow(['Epoch, RMSE, MAE, Normed MSE (loss); filename format = prop + train/val/test + n_conv + epochs'])
                 else:
                     writer.writerow(['Epoch, Loss, Accuracies, Precisions, Recalls, Fscores, Auc_scores; filename format = prop + train/val/test + n_conv + epochs'])
 
@@ -344,7 +344,7 @@ def train(train_loader, model, criterion, optimizer, epoch, normalizer):
                         auc=auc_scores)
                     )
                 if args.task == 'regression':
-                    row = [epoch, loss.item(), mae_errors.avg.item(), rmse_error.item()]
+                    row = [epoch, rmse_error.item(), mae_errors.avg.item(), losses.item()]
                 else:
                     row = [epoch, loss.item(), accuracies.avg, precisions.avg, recalls.avg, fscores.avg, auc_scores.avg]
                 writer.writerow(row)
@@ -444,7 +444,7 @@ def validate(val_loader, model, criterion, normalizer, test=False, epoch=-1):
             writer = csv.writer(loss_epoch_val_file)
             if epoch == 0 and i == 0:
                 if args.task == 'regression':
-                    writer.writerow(['Epoch, Normalized MSE (loss), MAE, RMSE; filename format = prop + train/val/test + n_conv + epochs'])
+                    writer.writerow(['Epoch, RMSE, MAE, Normalized  MSE (loss); filename format = prop + train/val/test + n_conv + epochs'])
                 else:
                     writer.writerow(['Epoch, Loss, Accuracies, Precisions, Recalls, Fscores, Auc_scores; filename format = prop + train/val/test + n_conv + epochs'])
 
@@ -472,7 +472,7 @@ def validate(val_loader, model, criterion, normalizer, test=False, epoch=-1):
                 if epoch >= 0:
                     if args.task == 'regression':
                         #row = [epoch, losses.avg.item(), mae_errors.avg.item()]
-                        row = [epoch, loss.item(), mae_errors.avg.item(), rmse_error.item()]
+                        row = [epoch, rmse_error.item(), mae_errors.avg.item(), losses.item()]
 
                     else:
                         row = [epoch, loss.item(), accuracies.avg, precisions.avg, recalls.avg, fscores.avg, auc_scores.avg]
