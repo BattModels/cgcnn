@@ -283,6 +283,7 @@ def train(train_loader, model, criterion, optimizer, epoch, normalizer):
             mae_error = mae(normalizer.denorm(output.data.cpu()), target)
             losses.update(loss.data.cpu(), target.size(0))
             mae_errors.update(mae_error, target.size(0))
+            rmse_error = rmse(normalizer.denorm(output.data.cpu()), target)
         else:
             accuracy, precision, recall, fscore, auc_score = \
                 class_eval(output.data.cpu(), target)
@@ -312,7 +313,7 @@ def train(train_loader, model, criterion, optimizer, epoch, normalizer):
             writer = csv.writer(loss_epoch_file)
             if epoch == 0 and i ==0:
                 if args.task == 'regression':
-                    writer.writerow(['Epoch, MSE (loss), MAE; filename format = prop + train/val/test + n_conv + epochs'])
+                    writer.writerow(['Epoch, Normed MSE (loss), MAE, RMSE; filename format = prop + train/val/test + n_conv + epochs'])
                 else:
                     writer.writerow(['Epoch, Loss, Accuracies, Precisions, Recalls, Fscores, Auc_scores; filename format = prop + train/val/test + n_conv + epochs'])
 
@@ -343,9 +344,9 @@ def train(train_loader, model, criterion, optimizer, epoch, normalizer):
                         auc=auc_scores)
                     )
                 if args.task == 'regression':
-                    row = [epoch, losses.avg.item(), mae_errors.avg.item()]
+                    row = [epoch, loss.item(), mae_errors.avg.item(), rmse_error.item()]
                 else:
-                    row = [epoch, losses.avg, accuracies.avg, precisions.avg, recalls.avg, fscores.avg, auc_scores.avg]
+                    row = [epoch, loss.item(), accuracies.avg, precisions.avg, recalls.avg, fscores.avg, auc_scores.avg]
                 writer.writerow(row)
 
         loss_epoch_file.close()
@@ -405,6 +406,7 @@ def validate(val_loader, model, criterion, normalizer, test=False, epoch=-1):
             mae_error = mae(normalizer.denorm(output.data.cpu()), target)
             losses.update(loss.data.cpu().item(), target.size(0))
             mae_errors.update(mae_error, target.size(0))
+            rmse_error = rmse(normalizer.denorm(output.data.cpu()), targer)
             if test:
                 test_pred = normalizer.denorm(output.data.cpu())
                 test_target = target
@@ -442,7 +444,7 @@ def validate(val_loader, model, criterion, normalizer, test=False, epoch=-1):
             writer = csv.writer(loss_epoch_val_file)
             if epoch == 0 and i == 0:
                 if args.task == 'regression':
-                    writer.writerow(['Epoch, MSE (loss), MAE; filename format = prop + train/val/test + n_conv + epochs'])
+                    writer.writerow(['Epoch, Normalized MSE (loss), MAE, RMSE; filename format = prop + train/val/test + n_conv + epochs'])
                 else:
                     writer.writerow(['Epoch, Loss, Accuracies, Precisions, Recalls, Fscores, Auc_scores; filename format = prop + train/val/test + n_conv + epochs'])
 
@@ -470,10 +472,10 @@ def validate(val_loader, model, criterion, normalizer, test=False, epoch=-1):
                 if epoch >= 0:
                     if args.task == 'regression':
                         #row = [epoch, losses.avg.item(), mae_errors.avg.item()]
-                        row = [epoch, losses.avg, mae_errors.avg.item()]
+                        row = [epoch, loss.item(), mae_errors.avg.item(), rmse_error.item()]
 
                     else:
-                        row = [epoch, losses.avg, accuracies.avg, precisions.avg, recalls.avg, fscores.avg, auc_scores.avg]
+                        row = [epoch, loss.item(), accuracies.avg, precisions.avg, recalls.avg, fscores.avg, auc_scores.avg]
                     writer.writerow(row)
 
         loss_epoch_val_file.close()
@@ -536,6 +538,18 @@ def mae(prediction, target):
     target: torch.Tensor (N, 1)
     """
     return torch.mean(torch.abs(target - prediction))
+
+def rmse(prediction, target):
+    """
+    Computes the root mean square error between prediction and target
+
+    Parameters
+    ----------
+
+    prediction: torch.Tensor (N,1)
+    target: torch.Tensor (N,1)
+    """
+    return np.sqrt(torch.mean((target-prediction)**2))
 
 
 def class_eval(prediction, target):
