@@ -406,7 +406,7 @@ def validate(val_loader, model, criterion, normalizer, test=False, epoch=-1):
             mae_error = mae(normalizer.denorm(output.data.cpu()), target)
             losses.update(loss.data.cpu().item(), target.size(0))
             mae_errors.update(mae_error, target.size(0))
-            rmse_error = rmse(normalizer.denorm(output.data.cpu()), targer)
+            rmse_error = rmse(normalizer.denorm(output.data.cpu()), target)
             if test:
                 test_pred = normalizer.denorm(output.data.cpu())
                 test_target = target
