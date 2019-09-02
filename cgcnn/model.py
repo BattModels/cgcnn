@@ -105,6 +105,7 @@ class CrystalGraphConvNet(nn.Module):
           List of strings containing, as first argument, the torch function to 
           be used, and, as second, optional argument, options for this function
           (in the case of norm)
+
         """
         super(CrystalGraphConvNet, self).__init__()
         self.classification = classification
@@ -127,7 +128,7 @@ class CrystalGraphConvNet(nn.Module):
             self.logsoftmax = nn.LogSoftmax(dim=1)
             self.dropout = nn.Dropout()
 
-    def forward(self, atom_fea, nbr_fea, nbr_fea_idx, crystal_atom_idx):
+    def forward(self, atom_fea, nbr_fea, nbr_fea_idx, crystal_atom_idx, pool_func):
         """
         Forward pass
 
@@ -146,7 +147,11 @@ class CrystalGraphConvNet(nn.Module):
           Indices of M neighbors of each atom
         crystal_atom_idx: list of torch.LongTensor of length N0
           Mapping from the crystal idx to atom idx
-
+        pool_func: list of strings
+          List of strings containing, as first argument, the torch function to 
+          be used, and, as second, optional argument, options for this function
+          (in the case of norm)
+   
         Returns
         -------
 
@@ -157,7 +162,7 @@ class CrystalGraphConvNet(nn.Module):
         atom_fea = self.embedding(atom_fea)
         for conv_func in self.convs:
             atom_fea = conv_func(atom_fea, nbr_fea, nbr_fea_idx)
-        crys_fea = self.pooling(atom_fea, crystal_atom_idx)
+        crys_fea = self.pooling(atom_fea, crystal_atom_idx, pool_func)
         crys_fea = self.conv_to_fc(self.conv_to_fc_softplus(crys_fea))
         crys_fea = self.conv_to_fc_softplus(crys_fea)
         if self.classification:

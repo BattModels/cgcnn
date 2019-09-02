@@ -157,7 +157,7 @@ def main():
                                 atom_fea_len=args.atom_fea_len,
                                 n_conv=args.n_conv,
                                 h_fea_len=args.h_fea_len,
-                                n_h=args.n_h, *args.pool_func, 
+                                n_h=args.n_h, pool_func=args.pool_func, 
                                 classification=True if args.task ==
                                                        'classification' else False)
     if args.cuda:
