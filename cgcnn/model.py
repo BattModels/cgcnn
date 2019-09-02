@@ -80,7 +80,8 @@ class CrystalGraphConvNet(nn.Module):
     material properties.
     """
     def __init__(self, orig_atom_fea_len, nbr_fea_len,
-                 atom_fea_len=64, n_conv=3, h_fea_len=128, n_h=1,
+                 atom_fea_len=64, n_conv=3, h_fea_len=128, n_h=1, 
+                 pool_func=['mean'],
                  classification=False):
         """
         Initialize CrystalGraphConvNet.
@@ -100,6 +101,10 @@ class CrystalGraphConvNet(nn.Module):
           Number of hidden features after pooling
         n_h: int
           Number of hidden layers after pooling
+        pool_func: list of strings
+          List of strings containing, as first argument, the torch function to 
+          be used, and, as second, optional argument, options for this function
+          (in the case of norm)
         """
         super(CrystalGraphConvNet, self).__init__()
         self.classification = classification
@@ -165,7 +170,7 @@ class CrystalGraphConvNet(nn.Module):
             out = self.logsoftmax(out)
         return out
 
-    def pooling(self, atom_fea, crystal_atom_idx):
+    def pooling(self, atom_fea, crystal_atom_idx, pool_func):
         """
         Pooling the atom features to crystal features
 
@@ -179,9 +184,21 @@ class CrystalGraphConvNet(nn.Module):
           Atom feature vectors of the batch
         crystal_atom_idx: list of torch.LongTensor of length N0
           Mapping from the crystal idx to atom idx
+        pool_func: list of strings
+          List of strings containing, as first argument, the torch function to 
+          be used, and, as second, optional argument, options for this function
+          (in the case of norm)
         """
         assert sum([len(idx_map) for idx_map in crystal_atom_idx]) ==\
             atom_fea.data.shape[0]
+
+        final_options = ')' if len(pool_func)==1 else ', p=' + pool_func[1] + ')'
+
+        summed_fea = eval('[torch.' + pool_func[0] + '(atom_fea[idx_map], ' \
+                    + 'dim=0, keepdim=True' + final_options + \
+                    ' for idx_map in crystal_atom_idx]')
+        '''
         summed_fea = [torch.mean(atom_fea[idx_map], dim=0, keepdim=True)
                       for idx_map in crystal_atom_idx]
+        '''
         return torch.cat(summed_fea, dim=0)

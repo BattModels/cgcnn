@@ -99,6 +99,10 @@ parser.add_argument('--max-rad', default=8, type=float,
 parser.add_argument('--rand-seed', default=123, type=int, 
                     help='random seed for training, validation, and test sets')
 
+parser.add_argument('--pool_func', default='mean', type=str, nargs='*', \
+                    choices = ['sum', 'mean', 'max', 'min', 'norm'], \
+                    help='Pooling function to be used; L2-norm specified by norm')
+
 global args
 args = parser.parse_args(sys.argv[1:])
 
@@ -153,7 +157,7 @@ def main():
                                 atom_fea_len=args.atom_fea_len,
                                 n_conv=args.n_conv,
                                 h_fea_len=args.h_fea_len,
-                                n_h=args.n_h,
+                                n_h=args.n_h, *args.pool_func, 
                                 classification=True if args.task ==
                                                        'classification' else False)
     if args.cuda:
@@ -313,7 +317,7 @@ def train(train_loader, model, criterion, optimizer, epoch, normalizer):
             writer = csv.writer(loss_epoch_file)
             if epoch == 0 and i ==0:
                 if args.task == 'regression':
-                    writer.writerow(['Epoch, RMSE, MAE, Normed MSE (loss); filename format = prop + train/val/test + n_conv + epochs'])
+                    writer.writerow(['Epoch, RMSE, MAE; filename format = prop + train/val/test + n_conv + epochs'])
                 else:
                     writer.writerow(['Epoch, Loss, Accuracies, Precisions, Recalls, Fscores, Auc_scores; filename format = prop + train/val/test + n_conv + epochs'])
 
@@ -344,7 +348,7 @@ def train(train_loader, model, criterion, optimizer, epoch, normalizer):
                         auc=auc_scores)
                     )
                 if args.task == 'regression':
-                    row = [epoch, rmse_error.item(), mae_errors.avg.item(), losses.item()]
+                    row = [epoch, rmse_error.item(), mae_errors.avg.item()]
                 else:
                     row = [epoch, loss.item(), accuracies.avg, precisions.avg, recalls.avg, fscores.avg, auc_scores.avg]
                 writer.writerow(row)
@@ -444,7 +448,7 @@ def validate(val_loader, model, criterion, normalizer, test=False, epoch=-1):
             writer = csv.writer(loss_epoch_val_file)
             if epoch == 0 and i == 0:
                 if args.task == 'regression':
-                    writer.writerow(['Epoch, RMSE, MAE, Normalized  MSE (loss); filename format = prop + train/val/test + n_conv + epochs'])
+                    writer.writerow(['Epoch, RMSE, MAE; filename format = prop + train/val/test + n_conv + epochs'])
                 else:
                     writer.writerow(['Epoch, Loss, Accuracies, Precisions, Recalls, Fscores, Auc_scores; filename format = prop + train/val/test + n_conv + epochs'])
 
@@ -472,7 +476,7 @@ def validate(val_loader, model, criterion, normalizer, test=False, epoch=-1):
                 if epoch >= 0:
                     if args.task == 'regression':
                         #row = [epoch, losses.avg.item(), mae_errors.avg.item()]
-                        row = [epoch, rmse_error.item(), mae_errors.avg.item(), losses.item()]
+                        row = [epoch, rmse_error.item(), mae_errors.avg.item()]
 
                     else:
                         row = [epoch, loss.item(), accuracies.avg, precisions.avg, recalls.avg, fscores.avg, auc_scores.avg]
