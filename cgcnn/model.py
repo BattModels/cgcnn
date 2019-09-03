@@ -205,6 +205,14 @@ class CrystalGraphConvNet(nn.Module):
         if len(pool_func)==1:
             summed_fea = [function.__call__(atom_fea[idx_map], dim=0, \
                          keepdim=True) for idx_map in crystal_atom_idx]
+            
+            # Some pooling functions (looking at you, min/max) return tuples of 
+            # (Tensor, LongTensor) when dim is specified and we want to be
+            # sure we only look at the actual Tensor and ignore the indices given
+            # by LongTensor
+            if type(summed_fea[0]) == tuple:
+                summed_fea = [elem[0] for elem in summed_fea]
+
         else:
             summed_fea = [function.__call__(atom_fea[idx_map], dim=0, \
                          keepdim=True, p=int(pool_func[1])) \

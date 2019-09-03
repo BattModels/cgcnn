@@ -122,7 +122,7 @@ model_info = args.prop + '_' + str(args.n_conv) + '_' + str(args.epochs) + '_' +
 for pool_spec in args.pool_func:
     model_info = model_info + pool_spec
 
-model_info = model_info + 'MaxNbr' + str(args.data_options[0]) + '_Radius' + \
+model_info = model_info + '_MaxNbr' + str(args.data_options[0]) + '_Radius' + \
              str(args.data_options[1]) + '_Dmin' + str(args.data_options[2]) + \
              '_Step' + str(args.data_options[3]) + '_RandSeed' + \
              str(args.data_options[4])
@@ -595,12 +595,7 @@ def save_checkpoint(state, is_best, filename='Checkpoints/' + args.prop + '_' + 
                     str(args.epochs) + '_' + str(args.n_h) + '.checkpoint.pth.tar'):
     torch.save(state, filename)
     if is_best:
-        shutil.copyfile(filename, 'Models/' + args.prop + '_' + str(args.n_conv) + '_' + 
-                        str(args.epochs) + '_' + str(args.n_h) + '_LR' + str('%.0E' % args.lr) +
-                                '_MaxNbr' + str(args.data_options[0]) + '_Radius' + 
-                                str(args.data_options[1]) + '_Dmin' + str(args.data_options[2]) + 
-                                '_Step' + str(args.data_options[3]) + '_RandSeed' + 
-                                str(args.data_options[4]) + '_model_best.pth.tar')
+        shutil.copyfile(filename, 'Models/' + model_info + '_model_best.pth.tar')
 
 
 def adjust_learning_rate(optimizer, epoch, k):
