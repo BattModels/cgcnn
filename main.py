@@ -100,11 +100,14 @@ parser.add_argument('--rand-seed', default=123, type=int,
                     help='random seed for training, validation, and test sets')
 
 parser.add_argument('--pool_func', default='mean', type=str, nargs='*', \
-                    choices = ['sum', 'mean', 'max', 'min', 'norm'], \
+                    choices = ['sum', 'mean', 'max', 'min', 'norm', \
+                    '1', '2', '3', '4'], \
                     help='Pooling function to be used; L2-norm specified by norm')
 
 global args
 args = parser.parse_args(sys.argv[1:])
+assert args.pool_func[0] in ['sum', 'mean', 'max', 'min', 'norm'],\
+     'Not a valid pooling function' 
 
 args.cuda = not args.disable_cuda and torch.cuda.is_available()
 
@@ -113,9 +116,19 @@ if args.task == 'regression':
 else:
     best_mae_error = 0.
 
+global model_info
+model_info = args.prop + '_' + str(args.n_conv) + '_' + str(args.epochs) + '_' +\
+            str(args.n_h) +'_' + 'LR' + str('%.0E' % args.lr) + '_Pool'
+for pool_spec in args.pool_func:
+    model_info = model_info + pool_spec
+
+model_info = model_info + 'MaxNbr' + str(args.data_options[0]) + '_Radius' + \
+             str(args.data_options[1]) + '_Dmin' + str(args.data_options[2]) + \
+             '_Step' + str(args.data_options[3]) + '_RandSeed' + \
+             str(args.data_options[4])
 
 def main():
-    global args, best_mae_error
+    global args, best_mae_error, model_info
 
     # load data
     dataset = CIFData(*args.csv_dir, *args.cif_dir, *args.init_dir, args.prop, *args.data_options)
@@ -227,12 +240,7 @@ def main():
 
     # test best model
     print('---------Evaluate Model on Test Set---------------')
-    best_checkpoint = torch.load('Models/' + args.prop + '_' + str(args.n_conv) + '_' + 
-                                str(args.epochs) + '_' + str(args.n_h) + '_LR' + str('%.0E' % args.lr) +
-                                '_MaxNbr' + str(args.data_options[0]) + '_Radius' + str(args.data_options[1]) + 
-                                '_Dmin' + str(args.data_options[2]) + '_Step' + 
-                                str(args.data_options[3]) + '_RandSeed' + 
-                                str(args.data_options[4]) + '_model_best.pth.tar')
+    best_checkpoint = torch.load('Models/' + model_info + '_model_best.pth.tar')
     model.load_state_dict(best_checkpoint['state_dict'])
     validate(test_loader, model, criterion, normalizer, test=True)
 
@@ -279,7 +287,7 @@ def train(train_loader, model, criterion, optimizer, epoch, normalizer):
             target_var = Variable(target_normed)
 
         # compute output
-        output = model(*input_var)
+        output = model(*input_var, pool_func=args.pool_func)
         loss = criterion(output, target_var)
 
         # measure accuracy and record loss
@@ -307,10 +315,7 @@ def train(train_loader, model, criterion, optimizer, epoch, normalizer):
         batch_time.update(time.time() - end)
         end = time.time()
 
-        loss_per_epoch_filename = 'Loss_per_Epoch/' + args.prop + '_' + str(args.n_conv) + '_' + str(args.epochs) + '_' + str(args.n_h) + \
-                                   '_LR' + str('%.0E' % args.lr) + '_MaxNbr' + str(args.data_options[0]) + '_Radius' + \
-                                   str(args.data_options[1]) + '_Dmin' + str(args.data_options[2]) + '_Step' + str(args.data_options[3]) + \
-                                   '_RandSeed' + str(args.data_options[4]) +'_train_LvE.csv'
+        loss_per_epoch_filename = 'Loss_per_Epoch/' + model_info +'_train_LvE.csv'
 
         with open(loss_per_epoch_filename, 'a') as loss_epoch_file:
             
@@ -402,7 +407,7 @@ def validate(val_loader, model, criterion, normalizer, test=False, epoch=-1):
                 target_var = Variable(target_normed)
 
         # compute output
-        output = model(*input_var)
+        output = model(*input_var, pool_func=args.pool_func)
         loss = criterion(output, target_var)
 
         # measure accuracy and record loss
@@ -438,10 +443,7 @@ def validate(val_loader, model, criterion, normalizer, test=False, epoch=-1):
         batch_time.update(time.time() - end)
         end = time.time()
 
-        loss_per_epoch_val_filename =  'Loss_per_Epoch/' + args.prop + '_' + str(args.n_conv) + '_' + str(args.epochs) + '_' + str(args.n_h) + \
-                                        '_LR' + str('%.0E' % args.lr) + '_MaxNbr' + str(args.data_options[0]) + '_Radius' + \
-                                        str(args.data_options[1]) + '_Dmin' + str(args.data_options[2]) + '_Step' + str(args.data_options[3]) + \
-                                        '_RandSeed' + str(args.data_options[4]) +'_val_LvE.csv'
+        loss_per_epoch_val_filename =  'Loss_per_Epoch/' + model_info +'_val_LvE.csv'
 
         with open(loss_per_epoch_val_filename, 'a') as loss_epoch_val_file:
             
@@ -488,10 +490,7 @@ def validate(val_loader, model, criterion, normalizer, test=False, epoch=-1):
     if test:
         star_label = '**'
         # import csv
-        with open('Test_results/' + args.prop + '_' + str(args.n_conv) + '_' + str(args.epochs) + 
-                    '_' + str(args.n_h) + '_LR' + str('%.0E' % args.lr) + '_MaxNbr' + str(args.data_options[0]) + 
-                    '_Radius' + str(args.data_options[1]) + '_Dmin' + str(args.data_options[2]) + '_Step' + 
-                                str(args.data_options[3]) + '_RandSeed' + str(args.data_options[4]) +'_test_results.csv', 'w') as f:
+        with open('Test_results/' + model_info +'_test_results.csv', 'w') as f:
             writer = csv.writer(f)
             for cif_id, target, pred in zip(test_cif_ids, test_targets,
                                             test_preds):

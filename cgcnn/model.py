@@ -196,13 +196,33 @@ class CrystalGraphConvNet(nn.Module):
         """
         assert sum([len(idx_map) for idx_map in crystal_atom_idx]) ==\
             atom_fea.data.shape[0]
+        
+        # Creating the pooling function object
+        function = eval('torch.' + pool_func[0])
 
-        final_options = ')' if len(pool_func)==1 else ', p=' + pool_func[1] + ')'
+        # If the pool_func list has more than one element, the second one corresponds 
+        # to the order of the norm to be taken, as is passed as p=...
+        if len(pool_func)==1:
+            summed_fea = [function.__call__(atom_fea[idx_map], dim=0, \
+                         keepdim=True) for idx_map in crystal_atom_idx]
+        else:
+            summed_fea = [function.__call__(atom_fea[idx_map], dim=0, \
+                         keepdim=True, p=int(pool_func[1])) \
+                         for idx_map in crystal_atom_idx]
 
+        '''
+        Older attemp (failed)
         summed_fea = eval('[torch.' + pool_func[0] + '(atom_fea[idx_map], ' \
                     + 'dim=0, keepdim=True' + final_options + \
-                    ' for idx_map in crystal_atom_idx]')
+                    ' for idx_map in crystal_atom_idx]', \
+                    {'torch':torch}, \
+                    {'atom_fea':atom_fea, \
+                    'crystal_atom_idx':crystal_atom_idx,
+                    'torch':torch})
         '''
+
+        '''
+        Original CGCNN code
         summed_fea = [torch.mean(atom_fea[idx_map], dim=0, keepdim=True)
                       for idx_map in crystal_atom_idx]
         '''
