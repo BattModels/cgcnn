@@ -287,7 +287,8 @@ def train(train_loader, model, criterion, optimizer, epoch, normalizer):
             target_var = Variable(target_normed)
 
         # compute output
-        output = model(*input_var, pool_func=args.pool_func)
+        # output = model(*input_var, pool_func=args.pool_func)
+        output = model(*input_var)
         loss = criterion(output, target_var)
 
         # measure accuracy and record loss
@@ -407,7 +408,7 @@ def validate(val_loader, model, criterion, normalizer, test=False, epoch=-1):
                 target_var = Variable(target_normed)
 
         # compute output
-        output = model(*input_var, pool_func=args.pool_func)
+        output = model(*input_var)
         loss = criterion(output, target_var)
 
         # measure accuracy and record loss

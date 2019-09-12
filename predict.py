@@ -20,8 +20,20 @@ from cgcnn.data import CIFData
 
 
 parser = argparse.ArgumentParser(description='Crystal gated neural networks')
-parser.add_argument('modelpath', help='path to the trained model.')
-parser.add_argument('cifpath', help='path to the directory of CIF files.')
+parser.add_argument('--model_path', required=True, help='path to the trained model.')
+parser.add_argument('--cif_dir', required=True, nargs='+', \
+                    help='path to the directory of CIF files.')
+parser.add_argument('--csv_dir', required=True, nargs='+', \
+                    help='Path to csv containing data info')
+parser.add_argument('--init_dir', required=True, nargs='+', \
+                    help='Path to atom_init.json')
+parser.add_argument('--prop', required=True, type=str, \
+                    help='Name of property to be predicted')
+parser.add_argument('--data_options', metavar='OPTIONS', nargs='+', type=float, \
+                    default=[12, 8, 0, 0.2, 123], \
+                    help='dataset options: max_num_nbr, radius, dmin, step, random_seed')
+parser.add_argument('--out_dir', type=str, \
+                    help='Path to where output .csv file will be saved')
 parser.add_argument('-b', '--batch-size', default=256, type=int,
                     metavar='N', help='mini-batch size (default: 256)')
 parser.add_argument('-j', '--workers', default=0, type=int, metavar='N',
@@ -32,14 +44,14 @@ parser.add_argument('--print-freq', '-p', default=10, type=int,
                     metavar='N', help='print frequency (default: 10)')
 
 args = parser.parse_args(sys.argv[1:])
-if os.path.isfile(args.modelpath):
-    print("=> loading model params '{}'".format(args.modelpath))
-    model_checkpoint = torch.load(args.modelpath,
+if os.path.isfile(args.model_path):
+    print("=> loading model params '{}'".format(args.model_path))
+    model_checkpoint = torch.load(args.model_path,
                                   map_location=lambda storage, loc: storage)
     model_args = argparse.Namespace(**model_checkpoint['args'])
-    print("=> loaded model params '{}'".format(args.modelpath))
+    print("=> loaded model params '{}'".format(args.model_path))
 else:
-    print("=> no model params found at '{}'".format(args.modelpath))
+    print("=> no model params found at '{}'".format(args.model_path))
 
 args.cuda = not args.disable_cuda and torch.cuda.is_available()
 
@@ -53,7 +65,8 @@ def main():
     global args, model_args, best_mae_error
 
     # load data
-    dataset = CIFData(args.cifpath)
+    dataset = CIFData(*args.csv_dir, *args.cif_dir, *args.init_dir, args.prop, \
+                    *args.data_options)
     collate_fn = collate_pool
     test_loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True,
                              num_workers=args.workers, collate_fn=collate_fn,
@@ -91,17 +104,17 @@ def main():
     normalizer = Normalizer(torch.zeros(3))
 
     # optionally resume from a checkpoint
-    if os.path.isfile(args.modelpath):
-        print("=> loading model '{}'".format(args.modelpath))
-        checkpoint = torch.load(args.modelpath,
+    if os.path.isfile(args.model_path):
+        print("=> loading model '{}'".format(args.model_path))
+        checkpoint = torch.load(args.model_path,
                                 map_location=lambda storage, loc: storage)
         model.load_state_dict(checkpoint['state_dict'])
         normalizer.load_state_dict(checkpoint['normalizer'])
         print("=> loaded model '{}' (epoch {}, validation {})"
-              .format(args.modelpath, checkpoint['epoch'],
+              .format(args.model_path, checkpoint['epoch'],
                       checkpoint['best_mae_error']))
     else:
-        print("=> no model found at '{}'".format(args.modelpath))
+        print("=> no model found at '{}'".format(args.model_path))
 
     validate(test_loader, model, criterion, normalizer, test=True)
 
@@ -133,10 +146,18 @@ def validate(val_loader, model, criterion, normalizer, test=False):
                          input[2].cuda(non_blocking=True),
                          [crys_idx.cuda(non_blocking=True) for crys_idx in input[3]])
         else:
-            input_var = (Variable(input[0], volatile=True),
-                         Variable(input[1], volatile=True),
-                         input[2],
-                         input[3])
+            with torch.no_grad():
+                input_var = (Variable(input[0]),
+                             Variable(input[1]),
+                             input[2],
+                             input[3])
+
+                '''
+                input_var = (Variable(input[0], volatile=True),
+                             Variable(input[1], volatile=True),
+                             input[2],
+                             input[3])
+                '''
         if model_args.task == 'regression':
             target_normed = normalizer.norm(target)
         else:
@@ -145,7 +166,11 @@ def validate(val_loader, model, criterion, normalizer, test=False):
             target_var = Variable(target_normed.cuda(non_blocking=True),
                                   volatile=True)
         else:
-            target_var = Variable(target_normed, volatile=True)
+            with torch.no_grad():
+                target_var = Variable(target_normed)
+                '''
+                target_var = Variable(target_normed, volatile=True)
+                '''
 
         # compute output
         output = model(*input_var)
@@ -154,7 +179,7 @@ def validate(val_loader, model, criterion, normalizer, test=False):
         # measure accuracy and record loss
         if model_args.task == 'regression':
             mae_error = mae(normalizer.denorm(output.data.cpu()), target)
-            losses.update(loss.data.cpu()[0], target.size(0))
+            losses.update(loss.data.cpu().item(), target.size(0))
             mae_errors.update(mae_error, target.size(0))
             if test:
                 test_pred = normalizer.denorm(output.data.cpu())
@@ -207,7 +232,7 @@ def validate(val_loader, model, criterion, normalizer, test=False):
     if test:
         star_label = '**'
         import csv
-        with open('test_results.csv', 'w') as f:
+        with open(args.out_dir+args.prop+'_test_results.csv', 'w') as f:
             writer = csv.writer(f)
             for cif_id, target, pred in zip(test_cif_ids, test_targets,
                                             test_preds):
