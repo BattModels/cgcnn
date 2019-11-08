@@ -42,6 +42,8 @@ parser.add_argument('--disable-cuda', action='store_true',
                     help='Disable CUDA')
 parser.add_argument('--print-freq', '-p', default=10, type=int,
                     metavar='N', help='print frequency (default: 10)')
+parser.add_argument('--rand_seed', default = '', type=str, 
+                    help='Radom seed used in model training; only useful for distinguishing result files')
 
 args = parser.parse_args(sys.argv[1:])
 if os.path.isfile(args.model_path):
@@ -65,8 +67,9 @@ def main():
     global args, model_args, best_mae_error
 
     # load data
-    dataset = CIFData(*args.csv_dir, *args.cif_dir, *args.init_dir, args.prop, \
-                    *args.data_options)
+    # dataset = CIFData(*args.csv_dir, *args.cif_dir, *args.init_dir, args.prop, \
+    #                 *args.data_options)
+    dataset = CIFData(*args.csv_dir, *args.cif_dir, *args.init_dir, args.prop, *args.data_options)
     collate_fn = collate_pool
     test_loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True,
                              num_workers=args.workers, collate_fn=collate_fn,
@@ -232,7 +235,7 @@ def validate(val_loader, model, criterion, normalizer, test=False):
     if test:
         star_label = '**'
         import csv
-        with open(args.out_dir+args.prop+'_test_results.csv', 'w') as f:
+        with open(args.out_dir+args.prop+args.rand_seed+'_test_results.csv', 'w') as f:
             writer = csv.writer(f)
             for cif_id, target, pred in zip(test_cif_ids, test_targets,
                                             test_preds):
