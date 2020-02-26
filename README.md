@@ -100,16 +100,7 @@ You can create a customized dataset by creating a directory `root_dir` with the 
 
 3. `ID.cif`: a [CIF](https://en.wikipedia.org/wiki/Crystallographic_Information_File) file that recodes the crystal structure, where `ID` is the unique `ID` for the crystal.
 
-The structure of the `root_dir` should be:
-
-```
-root_dir
-├── id_prop.csv
-├── atom_init.json
-├── id0.cif
-├── id1.cif
-├── ...
-```
+The flag `--csv_dir` specifies the directory with the `id_prop.csv` file, and the flag `--prop id_prop` identifies the name of file as `id_prop.csv`. Similarly, the flag `--cif_dir` specifies the path to the [CIF](https://en.wikipedia.org/wiki/Crystallographic_Information_File) files, and the flag `--init_dir`, the path to `atom_init.json`. 
 
 There are two examples of customized datasets in the repository: `data/sample-regression` for regression and `data/sample-classification` for classification. 
 
@@ -121,12 +112,12 @@ The above method of creating a customized dataset uses the `CIFData` class in `c
 
 Before training a new CGCNN model, you will need to:
 
-- [Define a customized dataset](#define-a-customized-dataset) at `root_dir` to store the structure-property relations of interest.
+- [Define a customized dataset](#define-a-customized-dataset) 
 
 Then, in directory `cgcnn`, you can train a CGCNN model for your customized dataset by:
 
 ```bash
-python main.py root_dir
+python main.py --csv_dir csv_dir --cif_dir cif_dir --init_dir init_dir --prop id_prop
 ```
 
 You can set the number of training, validation, and test data with labels `--train-size`, `--val-size`, and `--test-size`. Alternatively, you may use the flags `--train-ratio`, `--val-ratio`, `--test-ratio` instead. Note that the ratio flags cannot be used with the size flags simultaneously. For instance, `data/sample-regression` has 10 data points in total. You can train a model by:
@@ -145,11 +136,13 @@ You can also train a classification model with label `--task classification`. Fo
 python main.py --task classification --train-size 5 --val-size 2 --test-size 3 data/sample-classification
 ```
 
-After training, you will get three files in `cgcnn` directory.
+After training, five files will be created, where `(...)` represents property name (from `--prop`) and data options used in training (for more information, check `--data_options` flag).
 
-- `model_best.pth.tar`: stores the CGCNN model with the best validation accuracy.
-- `checkpoint.pth.tar`: stores the CGCNN model at the last epoch.
-- `test_results.csv`: stores the `ID`, target value, and predicted value for each crystal in test set.
+- `Models/(...)_best.pth.tar`: stores the CGCNN model with the best validation accuracy.
+- `Checkpoints/(...)_checkpoint.pth.tar`: stores the CGCNN model at the last epoch.
+- `Test_results/(...)_test_results.csv`: stores the `ID`, target value, and predicted value for each crystal in test set.
+- `Loss_per_Epoch/(...)_train_LvE.csv`: stores the epoch number, RMSE, and MAE of the training set
+- `Loss_per_Epoch/(...)_val_LvE.csv`: stores the epoch number, RMSE, and MAE of the validation set
 
 ### Predict material properties with a pre-trained CGCNN model
 
@@ -158,10 +151,10 @@ Before predicting the material properties, you will need to:
 - [Define a customized dataset](#define-a-customized-dataset) at `root_dir` for all the crystal structures that you want to predict.
 - Obtain a [pre-trained CGCNN model](pre-trained) named `pre-trained.pth.tar`.
 
-Then, in directory `cgcnn`, you can predict the properties of the crystals in `root_dir`:
+Then, in directory `cgcnn`, you can predict the properties of the crystals using the model stored in `model_path`:
 
 ```bash
-python predict.py pre-trained.pth.tar root_dir
+python predict.py pre-trained.pth.tar --csv_dir csv_dir --cif_dir cif_dir --init_dir init_dir --prop id_prop --model_path model_path --out_dir out_dir
 ```
 
 For instace, you can predict the formation energies of the crystals in `data/sample-regression`:
@@ -176,11 +169,11 @@ And you can also predict if the crystals in `data/sample-classification` are met
 python predict.py pre-trained/semi-metal-classification.pth.tar data/sample-classification
 ```
 
-Note that for classification, the predicted values in `test_results.csv` is a probability between 0 and 1 that the crystal can be classified as 1 (metal in the above example).
+Note that for classification, the predicted values in `out_dir/test_results.csv` is a probability between 0 and 1 that the crystal can be classified as 1 (metal in the above example).
 
 After predicting, you will get one file in `cgcnn` directory:
 
-- `test_results.csv`: stores the `ID`, target value, and predicted value for each crystal in test set. Here the target value is just any number that you set while defining the dataset in `id_prop.csv`, which is not important.
+- `out_dir/test_results.csv`: stores the `ID`, target value, and predicted value for each crystal in test set. Here the target value is just any number that you set while defining the dataset in `id_prop.csv`, which is not important.
 
 ## Authors
 
