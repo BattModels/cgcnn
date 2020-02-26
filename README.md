@@ -154,7 +154,7 @@ Before predicting the material properties, you will need to:
 Then, in directory `cgcnn`, you can predict the properties of the crystals using the model stored in `model_path`:
 
 ```bash
-python predict.py pre-trained.pth.tar --csv_dir csv_dir --cif_dir cif_dir --init_dir init_dir --prop id_prop --model_path model_path --out_dir out_dir
+python predict.py --csv_dir csv_dir --cif_dir cif_dir --init_dir init_dir --prop id_prop --model_path model_path/pre-trained.pth.tar --out_dir out_dir
 ```
 
 For instace, you can predict the formation energies of the crystals in `data/sample-regression`:
